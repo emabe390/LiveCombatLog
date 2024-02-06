@@ -4,7 +4,7 @@ import regex as re
 
 from character_fetcher import Cache
 
-TESTING = True
+TESTING = False
 
 TIMESTAMP_REGEX = "\\[ 20[0-9][0-9].[0-9][0-9].[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \\]"
 
@@ -276,12 +276,14 @@ def parse(path):
         if not data.parsed and isinstance(data, CombatLine):
             has_print = True
             print(data)
+        if isinstance(data, CombatLine):
+            print(data)
     return has_print
 
 
 if __name__ == '__main__':
     for filename in os.listdir("C:/Users/Aitesh/Documents/EVE/logs/Gamelogs/"):
-        if not filename.startswith("20240205"):
+        if not filename.startswith("20240206_083555_94087250"):
             continue
         try:
             if parse(rf"C:/Users/Aitesh/Documents/EVE/logs/Gamelogs/{filename}"):
