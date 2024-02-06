@@ -80,6 +80,13 @@ class Cache:
     def wait_for_image(self, user_id):
         if user_id in self.temp_data and THREAD_KEY in self.temp_data[user_id]:
             self.temp_data[user_id][THREAD_KEY].get()
+        return f"{CACHE_DIR}/{IMAGES_DIR}/{user_id}.png"
+
+    def get_image_path(self, name):
+        self.get_missing([name])
+        user_id = self.data[CHARACTERS_KEY][name][ID_KEY]
+        self.download_image(user_id)
+        return self.wait_for_image(user_id)
 
     def download_image(self, user_id):
         thread = self.get_temp_data(user_id, THREAD_KEY)

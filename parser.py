@@ -36,10 +36,12 @@ class Line:
         type = re.match(f"{TIMESTAMP_REGEX} \\(([^)]*)\\) .*", text).group(1)
         if type == "combat":
             combat_damage_matches = re.match(
-                f"{TIMESTAMP_REGEX}.*<color=0x[0-9a-fA-F]*><font size=[0-9]*>([^<]*)</font> <b><color=0x[0-9a-fA-F]*>([^>]*)</b><font size=[0-9]*><color=0x[0-9a-fA-F]*>(.*)$",
+                f"{TIMESTAMP_REGEX}.*<color=0x[0-9a-fA-F]*><font size=[0-9]*>([^<]*)</font> <b><color=0x[0-9a-fA-F]*>([^[>]*)(\\[[^]]*\\])*\\(([^)]*)\\)</b><font size=[0-9]*><color=0x[0-9a-fA-F]*> - (.*) - (.*)$",
                 text)
             if combat_damage_matches:
-                return DamageCombatLine(text, *combat_damage_matches.groups())
+                print(combat_damage_matches.groups())
+                outgoing, target, _ticker, ship, module, hit_type = combat_damage_matches.groups()
+                return DamageCombatLine(text, outgoing == "to", target, ship, module, hit_type)
             miss_you_matches = re.match(f"{TIMESTAMP_REGEX}.*\\(combat\\).*?(belonging to (.*) )*misses you completely - (.*)", text)
             if miss_you_matches:
                 _, possible_source_player, weapon_type = miss_you_matches.groups()
@@ -217,15 +219,15 @@ class MissCombatLine(CombatLine):
 
 
 class DamageCombatLine(CombatLine):
-    def __init__(self, text, target, name, extra):
+    def __init__(self, text, outgoing, pilot, ship, module, hit_type):
         super().__init__(text, True)
-        self.outgoing = target == "to"
-        self.name = name
+        self.outgoing = outgoing
+        self.pilot = pilot
         # xprint(self.name)  ## This has () in it!
-        self.extra = extra  # TODO: parse
+        self.module = module # TODO: parse
 
     def __str__(self):
-        return f"{self.outgoing}, {self.name}, {self.extra}"
+        return f"{self.outgoing}, {self.pilot}, {self.module}"
 
 
 def xprint(line):
@@ -283,7 +285,7 @@ def parse(path):
 
 if __name__ == '__main__':
     for filename in os.listdir("C:/Users/Aitesh/Documents/EVE/logs/Gamelogs/"):
-        if not filename.startswith("20240206_083555_94087250"):
+        if not filename.startswith("20240206_114231_788408631"):
             continue
         try:
             if parse(rf"C:/Users/Aitesh/Documents/EVE/logs/Gamelogs/{filename}"):
